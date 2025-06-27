@@ -210,7 +210,7 @@ REDIS_URL=redis://redis:6379/0
 # Django (Production Settings)
 SECRET_KEY=your-very-secure-secret-key-here
 DEBUG=False
-ALLOWED_HOSTS=your-domain.com,your-server-ip
+ALLOWED_HOSTS=checkurl.duckdns.org,your-server-ip
 
 # Celery
 CELERY_BROKER_URL=redis://redis:6379/0
@@ -323,7 +323,7 @@ http {
     # HTTP server - redirects to HTTPS
     server {
         listen 80;
-        server_name your-domain.com;
+        server_name checkurl.duckdns.org;
         
         # Let's Encrypt challenges
         location /.well-known/acme-challenge/ {
@@ -339,11 +339,11 @@ http {
     # HTTPS server
     server {
         listen 443 ssl http2;
-        server_name your-domain.com;
+        server_name checkurl.duckdns.org;
         
         # SSL Configuration
-        ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/checkurl.duckdns.org/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/checkurl.duckdns.org/privkey.pem;
         
         # SSL Security Settings
         ssl_protocols TLSv1.2 TLSv1.3;
@@ -389,7 +389,7 @@ Create init-letsencrypt.sh:
 #!/bin/bash
 
 # Replace with your domain and email
-domains=(your-domain.com)
+domains=(checkurl.duckdns.org)
 rsa_key_size=4096
 data_path="./certbot"
 email="your-email@example.com"
@@ -464,7 +464,7 @@ docker-compose exec nginx nginx -s reload
 chmod +x init-letsencrypt.sh
 
 # Update configuration files with your domain and email
-# Edit nginx.conf: Replace 'your-domain.com' with your actual domain
+# Edit nginx.conf: Replace 'checkurl.duckdns.org' with your actual domain
 # Edit init-letsencrypt.sh: Replace domain and email
 
 # Run initial deployment
@@ -482,14 +482,14 @@ docker-compose exec web python manage.py createsuperuser
 
 
 ### 9. Access Your Secure Application
-- **HTTPS Dashboard**: https://your-domain.com
-- **API**: https://your-domain.com/api/
-- **Admin**: https://your-domain.com/admin/
+- **HTTPS Dashboard**: https://checkurl.duckdns.org
+- **API**: https://checkurl.duckdns.org/api/
+- **Admin**: https://checkurl.duckdns.org/admin/
 
 ## 📚 API Documentation
 ### Base URL
 ```
-https://your-domain.com/api/
+https://checkurl.duckdns.org/api/
 ```
 
 ### Endpoints
@@ -585,10 +585,10 @@ docker-compose exec nginx nginx -s reload
 docker-compose ps
 
 # Check application
-curl https://your-domain.com/api/urls/
+curl https://checkurl.duckdns.org/api/urls/
 
 # Check SSL certificate
-openssl s_client -connect your-domain.com:443 -servername your-domain.com
+openssl s_client -connect checkurl.duckdns.org:443 -servername checkurl.duckdns.org
 ```
 
 ## Running Tests
