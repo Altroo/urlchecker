@@ -4,12 +4,13 @@ A Django-based web application for monitoring the health and availability of URL
 ## 📋 Table of Contents
 - [Features](#features)
 - [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
 - [Prerequisites](#prerequisites)
 - [Local Development Setup](#local-development-setup)
 - [Docker Production Deployment](#docker-production-deployment)
 - [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
+- [Tests](#Running-tests)
 
 ## ✨ Features
 - **Real-time URL monitoring** with health status tracking
