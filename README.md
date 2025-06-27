@@ -41,6 +41,56 @@ A Django-based web application for monitoring the health and availability of URL
 │   Health Data)  │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
+## 📁 Project Structure
+``` 
+url-health-monitor/
+├── urlchecker/             # Django project settings
+│   ├── __init__.py
+│   ├── settings.py         # Django configuration
+│   ├── urls.py             # Main URL routing
+│   ├── asgi.py             # ASGI application
+│   ├── wsgi.py             # WSGI application
+│   └── celery.py           # Celery configuration
+├── monitor/                # Django app
+│   ├── __init__.py
+│   ├── models.py           # URL and HealthCheck models
+│   ├── views.py            # API views and dashboard
+│   ├── serializers.py      # DRF serializers
+│   ├── tasks.py            # Celery tasks
+│   ├── urls.py             # App URL routing
+│   ├── migrations/         # Database migrations
+│   ├── static/             # Static files (CSS, JS)
+│   │   ├── css/
+│   │   │   └── dashboard.css
+│   │   └── js/
+│   │       └── monitor-dashboard.js
+│   ├───tests/
+│   │   └── __init__.py
+│   │   └── test_models.py  # Unit test for models
+│   │   └── test_tasks.py   # Unit test for tasks
+│   │   └── test_views.py   # Unit test for views
+│   └── templates/          # HTML templates
+│       └── dashboard.html
+├── requirements.txt       # Python dependencies
+├── manage.py              # Django management script
+├── Dockerfile             # Docker configuration
+└── README.md              # This file
+```
+
+## ⚙️ Configuration
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | SQLite connection string | Required |
+| `REDIS_URL` | Redis connection string | Required |
+| `SECRET_KEY` | Django secret key | Required |
+| `DEBUG` | Django debug mode | `False` |
+| `ALLOWED_HOSTS` | Comma-separated list of allowed hosts | Required |
+| `CELERY_BROKER_URL` | Celery broker URL | Same as `REDIS_URL` |
+| `CELERY_RESULT_BACKEND` | Celery result backend URL | Same as `REDIS_URL` |
+
+
 ### Key Components:
 - **Docker**: Containerized deployment with docker-compose
 - **Nginx**: Reverse proxy, SSL termination, static file serving
@@ -445,10 +495,6 @@ docker-compose exec web python manage.py createsuperuser
 https://your-domain.com/api/
 ```
 
-
-### Authentication
-Currently, the API does not require authentication. For production use, consider implementing Django REST framework authentication.
-
 ### Endpoints
 #### 1. Add New URL to Monitor
 ```
@@ -506,56 +552,6 @@ GET /api/urls/{id}/history/?limit=100
 ```
 POST /api/urls/{id}/check-now/
 ```
-
-
-## 📁 Project Structure
-``` 
-url-health-monitor/
-├── urlchecker/             # Django project settings
-│   ├── __init__.py
-│   ├── settings.py         # Django configuration
-│   ├── urls.py             # Main URL routing
-│   ├── asgi.py             # ASGI application
-│   ├── wsgi.py             # WSGI application
-│   └── celery.py           # Celery configuration
-├── monitor/                # Django app
-│   ├── __init__.py
-│   ├── models.py           # URL and HealthCheck models
-│   ├── views.py            # API views and dashboard
-│   ├── serializers.py      # DRF serializers
-│   ├── tasks.py            # Celery tasks
-│   ├── urls.py             # App URL routing
-│   ├── migrations/         # Database migrations
-│   ├── static/             # Static files (CSS, JS)
-│   │   ├── css/
-│   │   │   └── dashboard.css
-│   │   └── js/
-│   │       └── monitor-dashboard.js
-│   ├───tests/
-│   │   └── __init__.py
-│   │   └── test_models.py  # Unit test for models
-│   │   └── test_tasks.py   # Unit test for tasks
-│   │   └── test_views.py   # Unit test for views
-│   └── templates/          # HTML templates
-│       └── dashboard.html
-├── requirements.txt       # Python dependencies
-├── manage.py              # Django management script
-├── Dockerfile             # Docker configuration
-└── README.md              # This file
-```
-
-## ⚙️ Configuration
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | SQLite connection string | Required |
-| `REDIS_URL` | Redis connection string | Required |
-| `SECRET_KEY` | Django secret key | Required |
-| `DEBUG` | Django debug mode | `False` |
-| `ALLOWED_HOSTS` | Comma-separated list of allowed hosts | Required |
-| `CELERY_BROKER_URL` | Celery broker URL | Same as `REDIS_URL` |
-| `CELERY_RESULT_BACKEND` | Celery result backend URL | Same as `REDIS_URL` |
 
 ### Docker Commands
 ```shell script
