@@ -140,16 +140,16 @@ docker-compose up --build
 # Run in background
 docker-compose up --build -d
 ```
-### 4. Initialize Database
-# Run migrations
+## 4. Initialize Database
+### Run migrations
 ```
 docker-compose exec web python manage.py migrate
 ```
-# Create superuser (optional)
+### Create superuser (optional)
 ```
 docker-compose exec web python manage.py createsuperuser
 ```
-# Collect static files
+### Collect static files
 ```
 docker-compose exec web python manage.py collectstatic --noinput
 ```
@@ -169,42 +169,38 @@ Launch a cloud server (AWS EC2, DigitalOcean, etc.) with:
 - **Ports**: 22 (SSH), 80 (HTTP), 443 (HTTPS)
 ```
 ### 2. Install Docker
-```
-# Update system
+### Update system
 ```
 sudo apt update && sudo apt upgrade -y
 ```
-# Install Docker
+### Install Docker
 ```
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 ```
 
-# Install Docker Compose
+### Install Docker Compose
 ```
 sudo apt install docker-compose-plugin
 ```
-# Add user to docker group
+### Add user to docker group
 ```
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 ### 3. Deploy Application
-```
-
-# Clone repository
+### Clone repository
 ```
 git clone <repository-url> /opt/urlmonitor
 cd /opt/urlmonitor
 ```
-# Create production environment file
+### Create production environment file
 ```
 cp .env.example .env
 ```
 ### 4. Production Environment Configuration
 Edit `.env` file:
 ```
-
 # Database
 DATABASE_URL=sqlite:///db.sqlite3
 
