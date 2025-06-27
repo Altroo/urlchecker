@@ -232,6 +232,8 @@ function performDelete(urlId) {
             setButtonLoading($button, false);
         }
     });
+    // Reload page
+    refreshUrlGrid();
 }
 
 // Enhanced history view with Semantic UI modal
