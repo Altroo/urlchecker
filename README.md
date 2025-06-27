@@ -60,14 +60,12 @@ A Django-based web application for monitoring the health and availability of URL
 ## 🚀 Local Development Setup
 ### 1. Clone the Repository
 ```
-bash
 git clone <repository-url>
 cd url-health-monitor
 ```
 ### 2. Environment Configuration
 Create `.env` file in the project root:
 ```
-bash
 # Database
 DATABASE_URL=sqlite:///db.sqlite3
 
@@ -85,7 +83,6 @@ CELERY_RESULT_BACKEND=redis://redis:6379/0
 ```
 ### 3. Build and Run with Docker
 ```
-bash
 # Build and start all services
 docker-compose up --build
 
@@ -93,7 +90,6 @@ docker-compose up --build
 docker-compose up --build -d
 ```
 ### 4. Initialize Database
-```
 # Run migrations
 ```
 docker-compose exec web python manage.py migrate
@@ -107,18 +103,20 @@ docker-compose exec web python manage.py createsuperuser
 docker-compose exec web python manage.py collectstatic --noinput
 ```
 ### 5. Access the Application
+```
 - **Dashboard**: [http://localhost:8000/](http://localhost:8000/)
 - **API Root**: [http://localhost:8000/api/](http://localhost:8000/api/)
 - **Admin Panel**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
-
+```
 ## ☁️ Docker Production Deployment
 ### 1. Server Setup
+```
 Launch a cloud server (AWS EC2, DigitalOcean, etc.) with:
 - **OS**: Ubuntu 22.04 LTS or similar
 - **RAM**: 2GB minimum
 - **Storage**: 20GB minimum
 - **Ports**: 22 (SSH), 80 (HTTP), 443 (HTTPS)
-
+```
 ### 2. Install Docker
 ```
 # Update system
@@ -142,7 +140,7 @@ newgrp docker
 ```
 ### 3. Deploy Application
 ```
-bash
+
 # Clone repository
 git clone <repository-url> /opt/urlmonitor
 cd /opt/urlmonitor
@@ -153,7 +151,7 @@ cp .env.example .env
 ### 4. Production Environment Configuration
 Edit `.env` file:
 ```
-bash
+
 # Database
 DATABASE_URL=sqlite:///db.sqlite3
 
@@ -339,7 +337,6 @@ http {
 ```
 Create init-letsencrypt.sh:
 ```
-```bash
 #!/bin/bash
 
 # Replace with your domain and email
