@@ -1,0 +1,215 @@
+body {
+    background-color: #f8f9fa !important;
+    font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+
+.ui.container {
+    padding: 2rem 0;
+}
+
+/* Custom card hover effects */
+.ui.card {
+    transition: all 0.3s ease;
+}
+
+.ui.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(34, 36, 38, 0.15) !important;
+}
+
+.ui.card.updating {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Status indicators with animations */
+.ui.label {
+    transition: all 0.2s ease;
+}
+
+.ui.green.label {
+    animation: pulse-green 2s infinite;
+}
+
+.ui.red.label {
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(33, 186, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(33, 186, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(33, 186, 69, 0); }
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(219, 40, 40, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(219, 40, 40, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(219, 40, 40, 0); }
+}
+
+/* Form enhancements */
+.ui.form .field > label {
+    font-weight: 600;
+}
+
+.ui.form .field input:focus {
+    border-color: #0084ff;
+    box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.2);
+}
+
+/* Button loading states */
+.ui.button.loading {
+    pointer-events: none;
+}
+
+.ui.button.loading .button-text {
+    opacity: 0.7;
+}
+
+/* Custom spinner for buttons */
+.button-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* History modal content */
+.history-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(34, 36, 38, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.history-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-item .status-icon {
+    font-size: 1.5em;
+}
+
+/* Notification enhancements */
+.ui.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Empty state styling */
+.ui.placeholder.segment {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive adjustments */
+@media only screen and (max-width: 768px) {
+    .ui.container {
+        margin: 0 1em;
+        padding: 1rem 0;
+    }
+
+    .ui.stackable.grid > .column {
+        padding: 0.5rem;
+    }
+
+    .ui.form .two.fields {
+        margin: 0 -0.5em;
+    }
+
+    .ui.form .two.fields > .field {
+        padding: 0 0.5em;
+    }
+}
+
+/* Link styling */
+.ui.link {
+    word-break: break-all;
+    color: #4183c4 !important;
+}
+
+.ui.link:hover {
+    color: #1e70bf !important;
+}
+
+/* Card content spacing */
+.ui.card > .content > .header {
+    margin-bottom: 0.5em;
+}
+
+.ui.card > .content > .meta {
+    margin-bottom: 1em;
+    font-size: 0.9em;
+}
+
+.ui.card > .content > .description {
+    margin-bottom: 1em;
+}
+
+/* List styling in cards */
+.ui.relaxed.list .item {
+    padding: 0.25em 0;
+}
+
+.ui.relaxed.list .item .description {
+    font-size: 0.9em;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* Header styling */
+.ui.huge.header {
+    margin-bottom: 2rem;
+}
+
+.ui.huge.header .sub.header {
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: normal;
+}
+
+/* Segment styling */
+.ui.raised.segment {
+    margin-bottom: 2rem;
+}
+
+.ui.raised.card {
+    min-height: 310px;
+}
+
+.ui.button.compact {
+    padding: 10px;
+    margin: 0;
+}
+
+/* Error states */
+.ui.form .field.error input {
+    border-color: #e0b4b4;
+    background-color: #fff6f6;
+}
+
+.ui.pointing.red.basic.label {
+    margin-top: 0.5em;
+}
+
+/* Success states */
+.ui.positive.message {
+    margin-top: 1em;
+}

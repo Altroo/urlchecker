@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Health Monitor Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+    <link href="{% static 'css/monitor-dashboard.css' %}">
+</head>
+<body>
+    <div class="ui container">
+        <div class="ui center aligned header">
+            <h1 class="ui huge header">
+                <i class="globe icon"></i>
+                <span class="content">
+                    URL Health Monitor
+                    <span class="sub header">Monitor your websites and APIs in real-time</span>
+                </span>
+            </h1>
+        </div>
+
+        <div class="ui raised segment">
+            <h2 class="ui header">
+                <i class="plus icon"></i>
+                <span class="content">Add New URL to Monitor</span>
+            </h2>
+            <form class="ui form" id="addUrlForm">
+                {% csrf_token %}
+                <div class="two fields">
+                    <div class="field">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" placeholder="Website name..." required>
+                        <div class="ui pointing red basic label" id="nameError" style="display: none;"></div>
+                    </div>
+                    <div class="field">
+                        <label for="url">URL</label>
+                        <input type="url" id="url" name="url" placeholder="https://example.com" required>
+                        <div class="ui pointing red basic label" id="urlError" style="display: none;"></div>
+                    </div>
+                </div>
+                <button type="submit" class="ui primary button" id="addUrlBtn">
+                    <i class="plus icon"></i>
+                    <span class="button-text">Add URL</span>
+                </button>
+                <div class="ui positive message" id="formSuccess" style="display: none;"></div>
+            </form>
+        </div>
+
+        <div class="ui stackable four column grid" id="urlGrid">
+            {% for url in urls %}
+            <div class="column">
+                <div class="ui raised card" data-url-id="{{ url.id }}">
+                    <div class="content">
+                        <div class="header">{{ url.name }}</div>
+                        <div class="meta">
+                            <a href="{{ url.url }}" target="_blank" class="ui link">
+                                <i class="external link icon"></i>{{ url.url }}
+                            </a>
+                        </div>
+
+                        {% with latest=url.get_latest_health_check %}
+                        <div class="description">
+                            <div class="ui label {% if latest.is_healthy %}green{% elif latest %}red{% else %}blue{% endif %}">
+                                <i class="{% if latest.is_healthy %}check circle{% elif latest %}times circle{% else %}question circle{% endif %} icon"></i>
+                                {{ url.get_status_display }}
+                            </div>
+                        </div>
+
+                        {% if latest %}
+                        <div class="extra content">
+                            <div class="ui relaxed list">
+                                <div class="item">
+                                    <i class="clock icon"></i>
+                                    <div class="content">
+                                        <div class="description">Last checked {{ latest.checked_at|timesince }} ago</div>
+                                    </div>
+                                </div>
+                                {% if latest.status_code %}
+                                <div class="item">
+                                    <i class="info circle icon"></i>
+                                    <div class="content">
+                                        <div class="description">Status: {{ latest.status_code }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if latest.response_time %}
+                                <div class="item">
+                                    <i class="tachometer alternate icon"></i>
+                                    <div class="content">
+                                        <div class="description">Response: {{ latest.response_time|floatformat:3 }}s</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <div class="extra content">
+                        <div class="ui three fluid buttons">
+                            <button class="ui teal button compact" onclick="checkNow({{ url.id }})">
+                                <span class="button-text">Check</span>
+                            </button>
+                            <button class="ui blue button compact" onclick="viewHistory({{ url.id }})">
+                                <span class="button-text">History</span>
+                            </button>
+                            <button class="ui red button compact" onclick="deleteUrl({{ url.id }})">
+                                <span class="button-text">Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="sixteen wide column" id="emptyState">
+                <div class="ui placeholder segment">
+                    <div class="ui icon header">
+                        <i class="search icon"></i>
+                        No URLs being monitored yet
+                    </div>
+                    <div class="ui primary button" onclick="document.getElementById('name').focus()">
+                        Add Your First URL
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="ui modal" id="historyModal">
+        <div class="header">
+            <i class="history icon"></i>
+            <span id="historyTitle">Health Check History</span>
+        </div>
+        <div class="scrolling content" id="historyContent">
+            <div class="ui active centered inline loader"></div>
+            <p>Loading history...</p>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button" onclick="closeHistoryModal()">
+                Close
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container - Semantic UI Toast -->
+    <div id="notificationContainer"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+    <script src="{% static 'js/monitor-dashboard.js' %}"></script>
+</body>
+</html>

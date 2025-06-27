@@ -1,0 +1,8 @@
+Django==4.2
+celery==5.3
+redis==5.0
+djangorestframework==3.14
+requests==2.31
+python-decouple==3.8
+gunicorn==21.2
+django-cors-headers==4.7.0
