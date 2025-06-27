@@ -132,3 +132,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # for production
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Add these for HTTPS
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
