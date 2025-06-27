@@ -1,18 +1,18 @@
 # 🌐 URL Health Monitor
 A Django-based web application for monitoring the health and availability of URLs/websites in real-time. Features a modern Semantic UI dashboard, REST API, and asynchronous health checking with Celery. Deployed with Docker containers, Nginx reverse proxy, and SSL/TLS encryption.
 
-## 📋 Table of Contents
-- [Features](#-features)
-- [Architecture](#-architecture)
-- [Project Structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Prerequisites](#-prerequisites)
-- [Local Development Setup](#-local-development-setup)
-- [Docker Production Deployment](#-docker-production-deployment)
-- [API Documentation](#-api-documentation)
+## Table of Contents
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Prerequisites](#prerequisites)
+- [Local Development Setup](#local-development-setup)
+- [Docker Production Deployment](#docker-production-deployment)
+- [API Documentation](#api-documentation)
 - [Tests](#Running-tests)
 
-## ✨ Features
+## Features
 - **Real-time URL monitoring** with health status tracking
 - **REST API** for programmatic access
 - **Modern web dashboard** with Semantic UI
@@ -25,7 +25,8 @@ A Django-based web application for monitoring the health and availability of URL
 - **SSL/TLS encryption** with Let's Encrypt
 - **Nginx reverse proxy** for production
 
-## 🏗️ Architecture
+## Architecture
+
 ``` 
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Django Web    │    │     Redis       │    │   Celery Worker │
@@ -42,7 +43,7 @@ A Django-based web application for monitoring the health and availability of URL
 │   Health Data)  │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
-## 📁 Project Structure
+## Project Structure
 ``` 
 url-health-monitor/
 ├── urlchecker/             # Django project settings
@@ -78,7 +79,7 @@ url-health-monitor/
 └── README.md              # This file
 ```
 
-## ⚙️ Configuration
+## Configuration
 ### Environment Variables
 
 | Variable | Description | Default |
@@ -102,13 +103,13 @@ url-health-monitor/
 - **Let's Encrypt**: Free SSL/TLS certificates with auto-renewal
 - **Semantic UI**: Frontend framework for modern, responsive UI
 
-## 📦 Prerequisites
+## Prerequisites
 - Docker 20.0+
 - Docker Compose 2.0+
 - Git
 - Domain name (for SSL setup)
 
-## 🚀 Local Development Setup
+## Local Development Setup
 ### 1. Clone the Repository
 ```
 git clone <repository-url>
@@ -159,7 +160,7 @@ docker-compose exec web python manage.py collectstatic --noinput
 - **API Root**: [http://localhost:8000/api/](http://localhost:8000/api/)
 - **Admin Panel**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
 ```
-## ☁️ Docker Production Deployment
+## Docker Production Deployment
 ### 1. Server Setup
 ```
 Launch a cloud server (AWS EC2, DigitalOcean, etc.) with:
@@ -486,7 +487,7 @@ docker-compose exec web python manage.py createsuperuser
 - **API**: https://checkurl.duckdns.org/api/
 - **Admin**: https://checkurl.duckdns.org/admin/
 
-## 📚 API Documentation
+## API Documentation
 ### Base URL
 ```
 https://checkurl.duckdns.org/api/
