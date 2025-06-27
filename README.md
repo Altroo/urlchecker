@@ -254,12 +254,16 @@ version: '3.8'
 
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:latest
+    networks:
+      - app-network
     ports:
       - "6379:6379"
 
   web:
     build: .
+    networks:
+      - app-network
     command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 urlchecker.wsgi:application"
     volumes:
       - .:/app
@@ -270,20 +274,31 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   nginx:
     image: nginx:alpine
+    networks:
+      - app-network
     ports:
       - "80:80"
-      - "443:443"  # HTTPS port
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/app/staticfiles
-      - ./certbot/conf:/etc/letsencrypt  # SSL certificates
-      - ./certbot/www:/var/www/certbot   # Certbot challenges
-
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     depends_on:
-      - web
+      web:
+        condition: service_healthy  # Wait for web to be healthy
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
   certbot:
@@ -295,6 +310,8 @@ services:
 
   celery:
     build: .
+    networks:
+      - app-network
     command: celery -A urlchecker worker --loglevel=info --pool=solo
     volumes:
       - .:/app
@@ -302,9 +319,16 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
 volumes:
   static_volume:
+
+networks:
+  app-network:
+    driver: bridge
 ```
 ### 6. Configure Nginx
 **nginx.conf**:
@@ -317,10 +341,9 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
     
-    upstream django {
-        server web:8000;
-    }
-
+    # Add resolver for dynamic DNS resolution
+    resolver 127.0.0.11 valid=30s;
+    
     # HTTP server - redirects to HTTPS
     server {
         listen 80;
@@ -336,7 +359,7 @@ http {
             return 301 https://$host$request_uri;
         }
     }
-
+    
     # HTTPS server
     server {
         listen 443 ssl http2;
@@ -364,20 +387,20 @@ http {
             add_header Cache-Control "public, immutable";
         }
         
-        # Media files
-        location /media/ {
-            alias /app/media/;
-            expires 30d;
-        }
-        
-        # Main application
+        # Main application - use variable for dynamic resolution
         location / {
-            proxy_pass http://django;
+            set $upstream http://web:8000;
+            proxy_pass $upstream;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_redirect off;
+            
+            # Add connection timeouts
+            proxy_connect_timeout 30s;
+            proxy_send_timeout 30s;
+            proxy_read_timeout 30s;
         }
     }
 }
