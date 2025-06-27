@@ -16,16 +16,13 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
-from django.conf.urls.static import static
+from django.urls import path, include, re_path
+from django.views.static import serve
+from .settings import STATICFILES_DIRS
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('monitor.urls')),
     path('', include('monitor.urls')),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': STATICFILES_DIRS}),
 ]
-
-
-# Serve static files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
