@@ -2,14 +2,14 @@
 A Django-based web application for monitoring the health and availability of URLs/websites in real-time. Features a modern Semantic UI dashboard, REST API, and asynchronous health checking with Celery. Deployed with Docker containers, Nginx reverse proxy, and SSL/TLS encryption.
 
 ## 📋 Table of Contents
-- [Features](#features)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Prerequisites](#prerequisites)
-- [Local Development Setup](#local-development-setup)
-- [Docker Production Deployment](#docker-production-deployment)
-- [API Documentation](#api-documentation)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Project Structure](#-project-structure)
+- [Configuration](#-configuration)
+- [Prerequisites](#-prerequisites)
+- [Local Development Setup](#-local-development-setup)
+- [Docker Production Deployment](#-docker-production-deployment)
+- [API Documentation](#-api-documentation)
 - [Tests](#Running-tests)
 
 ## ✨ Features
