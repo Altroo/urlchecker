@@ -142,10 +142,12 @@ newgrp docker
 ```
 
 # Clone repository
+```
 git clone <repository-url> /opt/urlmonitor
 cd /opt/urlmonitor
-
+```
 # Create production environment file
+```
 cp .env.example .env
 ```
 ### 4. Production Environment Configuration
@@ -170,7 +172,6 @@ CELERY_RESULT_BACKEND=redis://redis:6379/0
 ### 5. Create Docker Files
 **Dockerfile**:
 ```
-dockerfile
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -336,6 +337,7 @@ http {
 ### 7. Setup SSL with Let's Encrypt
 ```
 Create init-letsencrypt.sh:
+```
 ```
 #!/bin/bash
 
