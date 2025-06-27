@@ -25,17 +25,19 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
   nginx:
     image: nginx:alpine
+    networks:
+      - app-network
     ports:
       - "80:80"
-      - "443:443"  # HTTPS port
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/app/staticfiles
-      - ./certbot/conf:/etc/letsencrypt  # SSL certificates
-      - ./certbot/www:/var/www/certbot   # Certbot challenges
-
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     depends_on:
       - web
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
@@ -49,6 +51,8 @@ services:
 
   celery:
     build: .
+    networks:
+      - app-network
     command: celery -A urlchecker worker --loglevel=info --pool=solo
     volumes:
       - .:/app
