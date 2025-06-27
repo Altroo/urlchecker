@@ -578,14 +578,12 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py shell
 ```
 
-
 ### SSL Certificate Renewal
 Certificates are automatically renewed by the certbot container. To manually renew:
 ```shell script
 docker-compose run --rm certbot renew
 docker-compose exec nginx nginx -s reload
 ```
-
 
 ### Health Checks
 **Verify services:**
@@ -598,4 +596,51 @@ curl https://your-domain.com/api/urls/
 
 # Check SSL certificate
 openssl s_client -connect your-domain.com:443 -servername your-domain.com
+```
+
+## Running Tests
+
+### Run All Tests
+```bash
+# Using pytest (recommended)
+pytest tests/
+
+# Using Python's unittest module
+python -m unittest discover tests/
+
+# Using Django's test runner (if Django project)
+python manage.py test tests/
+```
+
+### Run Specific Test Files
+
+```bash
+# Run model tests only
+pytest tests/test_models.py
+
+# Run task tests only
+pytest tests/test_tasks.py
+
+# Run view tests only
+pytest tests/test_views.py
+```
+
+### Run with Coverage Report
+
+```bash
+# Generate coverage report
+pytest tests/ --cov=. --cov-report=html
+
+# Generate coverage report in terminal
+pytest tests/ --cov=. --cov-report=term-missing
+```
+
+### Run with Verbose Output
+
+```bash
+# See detailed test output
+pytest tests/ -v
+
+# See even more detailed output
+pytest tests/ -vv
 ```
