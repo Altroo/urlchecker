@@ -1,11 +1,12 @@
 # 🌐 URL Health Monitor
-A Django-based web application for monitoring the health and availability of URLs/websites in real-time. Features a modern Semantic UI dashboard, REST API, and asynchronous health checking with Celery.
+A Django-based web application for monitoring the health and availability of URLs/websites in real-time. Features a modern Semantic UI dashboard, REST API, and asynchronous health checking with Celery. Deployed with Docker containers, Nginx reverse proxy, and SSL/TLS encryption.
+
 ## 📋 Table of Contents
 - [Features](#features)
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Local Development Setup](#local-development-setup)
-- [AWS EC2 Deployment](#aws-ec2-deployment)
+- [Docker Production Deployment](#docker-production-deployment)
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
 - [Configuration](#configuration)
@@ -19,6 +20,9 @@ A Django-based web application for monitoring the health and availability of URL
 - **Health check history** with detailed metrics
 - **Auto-refresh dashboard** with live updates
 - **Manual health checks** on demand
+- **Docker containerization** for easy deployment
+- **SSL/TLS encryption** with Let's Encrypt
+- **Nginx reverse proxy** for production
 
 ## 🏗️ Architecture
 ``` 
@@ -38,51 +42,37 @@ A Django-based web application for monitoring the health and availability of URL
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 ### Key Components:
-- **Django**: Web framework handling HTTP requests, REST API, and dashboard
-- **Sqlite**: Primary database for storing URLs and health check data
+- **Docker**: Containerized deployment with docker-compose
+- **Nginx**: Reverse proxy, SSL termination, static file serving
+- **Django + Gunicorn**: Web application with WSGI server
+- **SQLite**: Primary database for storing URLs and health check data
 - **Redis**: Message broker for Celery task queue and caching
 - **Celery**: Asynchronous task processor for health checks
+- **Let's Encrypt**: Free SSL/TLS certificates with auto-renewal
 - **Semantic UI**: Frontend framework for modern, responsive UI
 
 ## 📦 Prerequisites
-- Python 3.12+
-- Redis 6+
+- Docker 20.0+
+- Docker Compose 2.0+
 - Git
+- Domain name (for SSL setup)
 
 ## 🚀 Local Development Setup
 ### 1. Clone the Repository
-``` bash
+```
+bash
 git clone <repository-url>
 cd url-health-monitor
 ```
-### 2. Set Up Python Environment
-``` bash
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 3. Redis Setup
-``` bash
-# Install Redis or use Docker
-docker run --name redis-urlmonitor -p 6379:6379 -d redis:7-alpine
-```
-### 4. Environment Configuration
+### 2. Environment Configuration
 Create `.env` file in the project root:
-``` bash
+```
+bash
 # Database
 DATABASE_URL=sqlite:///db.sqlite3
 
 # Redis
-REDIS_URL=redis://localhost:6379/0
+REDIS_URL=redis://redis:6379/0
 
 # Django
 SECRET_KEY=your-secret-key-here
@@ -90,161 +80,379 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
 # Celery
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 ```
-### 6. Run Migrations
-``` bash
-python manage.py makemigrations
-python manage.py migrate
+### 3. Build and Run with Docker
 ```
-### 7. Create Superuser (Optional)
-``` bash
-python manage.py createsuperuser
+bash
+# Build and start all services
+docker-compose up --build
+
+# Run in background
+docker-compose up --build -d
 ```
-### 8. Start Services
-**Terminal 1 - Django Development Server:**
-``` bash
-python manage.py runserver
+### 4. Initialize Database
 ```
-**Terminal 2 - Celery Worker:**
-``` bash
-celery -A urlchecker worker --loglevel=info
+# Run migrations
 ```
-**Terminal 3 - Celery Beat (Optional - for periodic tasks):**
-``` bash
-celery -A urlchecker beat --loglevel=info
+docker-compose exec web python manage.py migrate
 ```
-### 9. Access the Application
+# Create superuser (optional)
+```
+docker-compose exec web python manage.py createsuperuser
+```
+# Collect static files
+```
+docker-compose exec web python manage.py collectstatic --noinput
+```
+### 5. Access the Application
 - **Dashboard**: [http://localhost:8000/](http://localhost:8000/)
 - **API Root**: [http://localhost:8000/api/](http://localhost:8000/api/)
 - **Admin Panel**: [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
-## ☁️ AWS EC2 Deployment
-### 1. Launch EC2 Instance
-- **Instance Type**: t3.small or larger
-- **OS**: Ubuntu 22.04 LTS
-- **Security Groups**: Allow ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
+## ☁️ Docker Production Deployment
+### 1. Server Setup
+Launch a cloud server (AWS EC2, DigitalOcean, etc.) with:
+- **OS**: Ubuntu 22.04 LTS or similar
+- **RAM**: 2GB minimum
+- **Storage**: 20GB minimum
+- **Ports**: 22 (SSH), 80 (HTTP), 443 (HTTPS)
 
-### 2. Connect and Update System
-``` bash
-ssh -i your-key.pem ubuntu@your-ec2-ip
-
+### 2. Install Docker
+```
+# Update system
+```
 sudo apt update && sudo apt upgrade -y
 ```
-### 3. Install Dependencies
-``` bash
-# Python and Redis
-sudo apt install -y python3-pip python3-venv nginx redis-server
-
-# Start services
-sudo systemctl start redis-server nginx
-sudo systemctl enable redis-server nginx
+# Install Docker
 ```
-### 4. Application Setup
-``` bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+# Install Docker Compose
+```
+sudo apt install docker-compose-plugin
+```
+# Add user to docker group
+```
+sudo usermod -aG docker $USER
+newgrp docker
+```
+### 3. Deploy Application
+```
+bash
 # Clone repository
 git clone <repository-url> /opt/urlmonitor
 cd /opt/urlmonitor
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Create production environment file
+cp .env.example .env
 ```
-### 5. Production Environment Configuration
-Create `/opt/urlmonitor/.env`:
-``` bash
+### 4. Production Environment Configuration
+Edit `.env` file:
+```
+bash
+# Database
 DATABASE_URL=sqlite:///db.sqlite3
-REDIS_URL=redis://localhost:6379/0
-SECRET_KEY=your-production-secret-key
+
+# Redis
+REDIS_URL=redis://redis:6379/0
+
+# Django (Production Settings)
+SECRET_KEY=your-very-secure-secret-key-here
 DEBUG=False
-ALLOWED_HOSTS=your-domain.com,your-ec2-ip
+ALLOWED_HOSTS=your-domain.com,your-server-ip
+
+# Celery
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
 ```
-### 6. Run Migrations and Collect Static Files
-``` bash
-python manage.py migrate
-python manage.py collectstatic --noinput
+### 5. Create Docker Files
+**Dockerfile**:
 ```
-### 7. Create Systemd Services
-**Django Service** (`/etc/systemd/system/urlmonitor.service`):
-``` ini
-[Unit]
-Description=URL Monitor Django App
-After=network.target
+dockerfile
+FROM python:3.12-slim
 
-[Service]
-User=ubuntu
-Group=ubuntu
-WorkingDirectory=/opt/urlmonitor
-Environment=PATH=/opt/urlmonitor/venv/bin
-ExecStart=/opt/urlmonitor/venv/bin/gunicorn --bind 127.0.0.1:8000 urlchecker.wsgi:application
-Restart=always
+WORKDIR /app
 
-[Install]
-WantedBy=multi-user.target
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Create directories for static
+RUN mkdir -p staticfiles
+
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
+# Expose port
+EXPOSE 8000
+
+# Start Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "urlchecker.wsgi:application"]
 ```
-**Celery Worker Service** (`/etc/systemd/system/urlmonitor-celery.service`):
-``` ini
-[Unit]
-Description=URL Monitor Celery Worker
-After=network.target
-
-[Service]
-User=ubuntu
-Group=ubuntu
-WorkingDirectory=/opt/urlmonitor
-Environment=PATH=/opt/urlmonitor/venv/bin
-ExecStart=/opt/urlmonitor/venv/bin/celery -A urlchecker worker --loglevel=info
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+**docker-compose.yml**:
 ```
-### 8. Configure Nginx
-Create `/etc/nginx/sites-available/urlmonitor`:
-``` nginx
-server {
-    listen 80;
-    server_name your-domain.com your-ec2-ip;
+version: '3.8'
 
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 urlchecker.wsgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    expose:
+      - "8000"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"  # HTTPS port
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles
+      - ./certbot/conf:/etc/letsencrypt  # SSL certificates
+      - ./certbot/www:/var/www/certbot   # Certbot challenges
+
+    depends_on:
+      - web
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  celery:
+    build: .
+    command: celery -A urlchecker worker --loglevel=info --pool=solo
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    env_file:
+      - .env
+
+volumes:
+  static_volume:
+```
+### 6. Configure Nginx
+**nginx.conf**:
+```
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    upstream django {
+        server web:8000;
     }
 
-    location /static/ {
-        alias /opt/urlmonitor/staticfiles/;
+    # HTTP server - redirects to HTTPS
+    server {
+        listen 80;
+        server_name your-domain.com;
+        
+        # Let's Encrypt challenges
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+        
+        # Redirect all other HTTP traffic to HTTPS
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    # HTTPS server
+    server {
+        listen 443 ssl http2;
+        server_name your-domain.com;
+        
+        # SSL Configuration
+        ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+        
+        # SSL Security Settings
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers off;
+        ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+        
+        # Security headers
+        add_header Strict-Transport-Security "max-age=63072000" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        
+        # Static files
+        location /static/ {
+            alias /app/staticfiles/;
+            expires 30d;
+            add_header Cache-Control "public, immutable";
+        }
+        
+        # Media files
+        location /media/ {
+            alias /app/media/;
+            expires 30d;
+        }
+        
+        # Main application
+        location / {
+            proxy_pass http://django;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_redirect off;
+        }
     }
 }
 ```
-### 9. Enable and Start Services
-``` bash
-# Enable Nginx site
-sudo ln -s /etc/nginx/sites-available/urlmonitor /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-
-# Start all services
-sudo systemctl daemon-reload
-sudo systemctl enable urlmonitor urlmonitor-celery
-sudo systemctl start urlmonitor urlmonitor-celery nginx
-
-# Restart Nginx
-sudo systemctl restart nginx
+### 7. Setup SSL with Let's Encrypt
 ```
+Create init-letsencrypt.sh:
+```
+```bash
+#!/bin/bash
+
+# Replace with your domain and email
+domains=(your-domain.com)
+rsa_key_size=4096
+data_path="./certbot"
+email="your-email@example.com"
+staging=0 # Set to 1 if you're testing your setup
+
+if [ -d "$data_path" ]; then
+  read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision
+  if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
+    exit
+  fi
+fi
+
+if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
+  echo "### Downloading recommended TLS parameters ..."
+  mkdir -p "$data_path/conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "$data_path/conf/options-ssl-nginx.conf"
+  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/conf/ssl-dhparams.pem"
+  echo
+fi
+
+echo "### Creating dummy certificate for $domains ..."
+path="/etc/letsencrypt/live/$domains"
+mkdir -p "$data_path/conf/live/$domains"
+docker-compose run --rm --entrypoint "\
+  openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1\
+    -keyout '$path/privkey.pem' \
+    -out '$path/fullchain.pem' \
+    -subj '/CN=localhost'" certbot
+echo
+
+echo "### Starting nginx ..."
+docker-compose up --force-recreate -d nginx
+echo
+
+echo "### Deleting dummy certificate for $domains ..."
+docker-compose run --rm --entrypoint "\
+  rm -Rf /etc/letsencrypt/live/$domains && \
+  rm -Rf /etc/letsencrypt/archive/$domains && \
+  rm -Rf /etc/letsencrypt/renewal/$domains.conf" certbot
+echo
+
+echo "### Requesting Let's Encrypt certificate for $domains ..."
+domain_args=""
+for domain in "${domains[@]}"; do
+  domain_args="$domain_args -d $domain"
+done
+
+case "$email" in
+  "") email_arg="--register-unsafely-without-email" ;;
+  *) email_arg="--email $email" ;;
+esac
+
+if [ $staging != "0" ]; then staging_arg="--staging"; fi
+
+docker-compose run --rm --entrypoint "\
+  certbot certonly --webroot -w /var/www/certbot \
+    $staging_arg \
+    $email_arg \
+    $domain_args \
+    --rsa-key-size $rsa_key_size \
+    --agree-tos \
+    --force-renewal" certbot
+echo
+
+echo "### Reloading nginx ..."
+docker-compose exec nginx nginx -s reload
+```
+
+### 8. Deploy with SSL
+```shell script
+# Make SSL script executable
+chmod +x init-letsencrypt.sh
+
+# Update configuration files with your domain and email
+# Edit nginx.conf: Replace 'your-domain.com' with your actual domain
+# Edit init-letsencrypt.sh: Replace domain and email
+
+# Run initial deployment
+docker-compose up --build -d
+
+# Setup SSL certificates
+./init-letsencrypt.sh
+
+# Run database migrations
+docker-compose exec web python manage.py migrate
+
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
+```
+
+
+### 9. Access Your Secure Application
+- **HTTPS Dashboard**: https://your-domain.com
+- **API**: https://your-domain.com/api/
+- **Admin**: https://your-domain.com/admin/
+
 ## 📚 API Documentation
 ### Base URL
-``` 
-http://your-domain.com/api/
 ```
+https://your-domain.com/api/
+```
+
+
 ### Authentication
 Currently, the API does not require authentication. For production use, consider implementing Django REST framework authentication.
+
 ### Endpoints
 #### 1. Add New URL to Monitor
-``` http
+```
 POST /api/urls/
 Content-Type: application/json
 
@@ -254,8 +462,10 @@ Content-Type: application/json
     "is_active": true
 }
 ```
+
+
 **Response:**
-``` json
+```json
 {
     "id": 1,
     "name": "Google",
@@ -266,110 +476,39 @@ Content-Type: application/json
     "status_display": "Unknown"
 }
 ```
+
+
 #### 2. List All Monitored URLs
-``` http
+```
 GET /api/urls/
 ```
-**Response:**
-``` json
-[
-    {
-        "id": 1,
-        "name": "Google",
-        "url": "https://google.com",
-        "created_at": "2025-01-01T12:00:00Z",
-        "is_active": true,
-        "latest_health_check": {
-            "id": 1,
-            "status_code": 200,
-            "response_time": 0.245,
-            "checked_at": "2025-01-01T12:05:00Z",
-            "is_healthy": true,
-            "error_message": null
-        },
-        "status_display": "Healthy"
-    }
-]
-```
+
+
 #### 3. Get URL Details with Latest Status
-``` http
+```
 GET /api/urls/{id}/
 ```
-**Response:**
-``` json
-{
-    "id": 1,
-    "name": "Google",
-    "url": "https://google.com",
-    "created_at": "2025-01-01T12:00:00Z",
-    "is_active": true,
-    "latest_health_check": {
-        "id": 1,
-        "status_code": 200,
-        "response_time": 0.245,
-        "checked_at": "2025-01-01T12:05:00Z",
-        "is_healthy": true,
-        "error_message": null
-    },
-    "status_display": "Healthy"
-}
-```
+
+
 #### 4. Delete URL from Monitoring
-``` http
+```
 DELETE /api/urls/{id}/
 ```
-**Response:**
-``` json
-{
-    "message": "URL \"Google\" has been removed from monitoring.",
-    "status": "deleted"
-}
-```
+
+
 #### 5. Get Health Check History
-``` http
+```
 GET /api/urls/{id}/history/
 GET /api/urls/{id}/history/?limit=100
 ```
-**Response:**
-``` json
-{
-    "url_id": 1,
-    "url_name": "Google",
-    "total_checks": 10,
-    "history": [
-        {
-            "id": 10,
-            "status_code": 200,
-            "response_time": 0.234,
-            "checked_at": "2025-01-01T12:05:00Z",
-            "is_healthy": true,
-            "error_message": null
-        },
-        {
-            "id": 9,
-            "status_code": 200,
-            "response_time": 0.287,
-            "checked_at": "2025-01-01T12:00:00Z",
-            "is_healthy": true,
-            "error_message": null
-        }
-    ]
-}
-```
+
+
 #### 6. Trigger Immediate Health Check
-``` http
+```
 POST /api/urls/{id}/check-now/
 ```
-**Response:**
-``` json
-{
-    "message": "Health check queued for Google",
-    "url_id": 1,
-    "url_name": "Google",
-    "task_id": "celery-task-id-here",
-    "status": "queued"
-}
-```
+
+
 ## 📁 Project Structure
 ``` 
 url-health-monitor/
@@ -405,49 +544,59 @@ url-health-monitor/
 ├── Dockerfile             # Docker configuration
 └── README.md              # This file
 ```
+
 ## ⚙️ Configuration
 ### Environment Variables
 
-| Variable | Description                           | Default |
-| --- |---------------------------------------| --- |
-| `DATABASE_URL` | Sqlite connection string              | Required |
-| `REDIS_URL` | Redis connection string               | Required |
-| `SECRET_KEY` | Django secret key                     | Required |
-| `DEBUG` | Django debug mode                     | `False` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | SQLite connection string | Required |
+| `REDIS_URL` | Redis connection string | Required |
+| `SECRET_KEY` | Django secret key | Required |
+| `DEBUG` | Django debug mode | `False` |
 | `ALLOWED_HOSTS` | Comma-separated list of allowed hosts | Required |
-| `CELERY_BROKER_URL` | Celery broker URL                     | Same as `REDIS_URL` |
-| `CELERY_RESULT_BACKEND` | Celery result backend URL             | Same as `REDIS_URL` |
-### Django Settings
-Key settings in `urlchecker/settings.py`:
-- **Database**: Sqlite with connection pooling
-- **Cache**: Redis for session and cache storage
-- **Static Files**: Configured for production deployment
-- **CORS**: Enabled for API access
-- **REST Framework**: Configured with pagination
+| `CELERY_BROKER_URL` | Celery broker URL | Same as `REDIS_URL` |
+| `CELERY_RESULT_BACKEND` | Celery result backend URL | Same as `REDIS_URL` |
 
-### Logs
-**View application logs:**
-``` bash
-# Django logs
-sudo journalctl -u urlmonitor -f
+### Docker Commands
+```shell script
+# View logs
+docker-compose logs -f web        # Django logs
+docker-compose logs -f celery     # Celery logs
+docker-compose logs -f nginx      # Nginx logs
 
-# Celery logs  
-sudo journalctl -u urlmonitor-celery -f
+# Restart services
+docker-compose restart web
+docker-compose restart celery
+docker-compose restart nginx
 
-# Nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
+# Update application
+git pull
+docker-compose up --build -d
+
+# Database operations
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py shell
 ```
+
+
+### SSL Certificate Renewal
+Certificates are automatically renewed by the certbot container. To manually renew:
+```shell script
+docker-compose run --rm certbot renew
+docker-compose exec nginx nginx -s reload
+```
+
+
 ### Health Checks
 **Verify services:**
-``` bash
-# Check Django
-curl http://localhost:8000/api/urls/
+```shell script
+# Check all containers
+docker-compose ps
 
-# Check Redis
-redis-cli ping
+# Check application
+curl https://your-domain.com/api/urls/
 
-# Check Celery
-celery -A urlchecker inspect ping
+# Check SSL certificate
+openssl s_client -connect your-domain.com:443 -servername your-domain.com
 ```
-
